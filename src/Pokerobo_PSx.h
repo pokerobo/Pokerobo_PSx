@@ -1,2 +1,5 @@
 #include "PS2_Commons.h"
 #include "PS2_Controller.h"
+#include "PS2_ControlProcessor.h"
+#include "PS2_EventDispatcher.h"
+#include "PS2_EventTrigger.h"

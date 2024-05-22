@@ -2,6 +2,7 @@
 
 PS2Controller_::PS2Controller_() {
   _debugEnabled = true;
+  _logger = NULL;
   _errorCode = 0;
   _errorDisplayed = false;
 }
@@ -15,22 +16,30 @@ void PS2Controller_::begin() {
   // Check for error
   if(_errorCode == 0) {
     #if __PS2INIT_LOG_ENABLED__
-    debugLog("Controller", " ", "found, configured successful");
+    if (isDebugEnabled()) {
+      getLogger()->debug("Controller", " ", "found, configured successful");
+    }
     #endif
   }
   else if(_errorCode == 1) {
     #if __PS2INIT_LOG_ENABLED__
-    debugLog("Controller", " ", "not found, check wiring or reset the Arduino");
+    if (isDebugEnabled()) {
+      getLogger()->debug("Controller", " ", "not found, check wiring or reset the Arduino");
+    }
     #endif
   }
   else if(_errorCode == 2) {
     #if __PS2INIT_LOG_ENABLED__
-    debugLog("Controller", " ", "found but not accepting commands");
+    if (isDebugEnabled()) {
+      getLogger()->debug("Controller", " ", "found but not accepting commands");
+    }
     #endif
   }
   else if(_errorCode == 3) {
     #if __PS2INIT_LOG_ENABLED__
-    debugLog("Controller", " ", "refusing to enter Pressures mode."); // may not support it
+    if (isDebugEnabled()) {
+      getLogger()->debug("Controller", " ", "refusing to enter Pressures mode."); // may not support it
+    }
     #endif
   }
   //
@@ -39,23 +48,31 @@ void PS2Controller_::begin() {
   switch(ps2Type) {
     case 0:
       #if __PS2INIT_LOG_ENABLED__
-      debugLog("Unknown", " ", "Controller", " ", "type");
+      if (isDebugEnabled()) {
+        getLogger()->debug("Unknown", " ", "Controller", " ", "type");
+      }
       #endif
       break;
     case 1:
       #if __PS2INIT_LOG_ENABLED__
-      debugLog("DualShock", " ", "Controller", " ", "Found");
+      if (isDebugEnabled()) {
+        getLogger()->debug("DualShock", " ", "Controller", " ", "Found");
+      }
       #endif
       break;
     case 2:
       #if __PS2INIT_LOG_ENABLED__
-      debugLog("GuitarHero", " ", "Controller", " ", "Found");
+      if (isDebugEnabled()) {
+        getLogger()->debug("GuitarHero", " ", "Controller", " ", "Found");
+      }
       #endif
       break;
     default:
       #if __PS2INIT_LOG_ENABLED__
-      char b_[5];
-      debugLog("Invalid", " ", "Controller", " ", "type", ": ", itoa(ps2Type, b_, 10));
+      if (isDebugEnabled()) {
+        char b_[5];
+        getLogger()->debug("Invalid", " ", "Controller", " ", "type", ": ", itoa(ps2Type, b_, 10));
+      }
       #endif
       NULL;
   }
@@ -67,7 +84,9 @@ bool PS2Controller_::hasError() {
 
 void PS2Controller_::showError() {
   if (!_errorDisplayed) {
-    debugLog("Error, terminated!");
+    if (isDebugEnabled()) {
+      getLogger()->debug("Error, terminated!");
+    }
     _errorDisplayed = true;
   }
 };
@@ -79,7 +98,9 @@ void PS2Controller_::reload() {
 int PS2Controller_::loop() {
   if(hasError()) { //skip loop if no controller found
     showError();
-    debugLog("Reload ...");
+    if (isDebugEnabled()) {
+      getLogger()->debug("Reload ...");
+    }
     delay(1000);
     reload();
     return 0;
@@ -89,7 +110,11 @@ int PS2Controller_::loop() {
 }
 
 bool PS2Controller_::isDebugEnabled() {
-  return _debugEnabled;
+  return (_logger != NULL) && _debugEnabled;
+}
+
+PSxDebugLogger* PS2Controller_::getLogger() {
+  return _logger;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -187,54 +212,54 @@ int PS2Listener::read(PS2ControlPacket* action) {
   uint16_t buttons = 0;
 
   if(ps2x.Button(PSB_START)) {
-    #if __RUNNING_LOG_ENABLED__
+    #if POKEROBO_PSX_TRACE_ENABLED
     if (isDebugEnabled()) {
-      debugLog("PSB", "_", "START", " is pushed");
+      getLogger()->debug("PSB", "_", "START", " is pushed");
     }
     #endif
     buttons |= MASK_START_BUTTON;
   }
 
   if(ps2x.Button(PSB_SELECT)) {
-    #if __RUNNING_LOG_ENABLED__
+    #if POKEROBO_PSX_TRACE_ENABLED
     if (isDebugEnabled()) {
-      debugLog("PSB", "_", "SELECT", " is pushed");
+      getLogger()->debug("PSB", "_", "SELECT", " is pushed");
     }
     #endif
     buttons |= MASK_SELECT_BUTTON;
   }
 
   if(ps2x.Button(PSB_PAD_UP)) {
-    #if __RUNNING_LOG_ENABLED__
+    #if POKEROBO_PSX_TRACE_ENABLED
     if (isDebugEnabled()) {
-      debugLog("PSB", "_", "PAD", "_", "UP", " is pushed");
+      getLogger()->debug("PSB", "_", "PAD", "_", "UP", " is pushed");
     }
     #endif
     buttons |= MASK_UP_BUTTON;
   }
 
   if(ps2x.Button(PSB_PAD_RIGHT)) {
-    #if __RUNNING_LOG_ENABLED__
+    #if POKEROBO_PSX_TRACE_ENABLED
     if (isDebugEnabled()) {
-      debugLog("PSB", "_", "PAD", "_", "RIGHT", " is pushed");
+      getLogger()->debug("PSB", "_", "PAD", "_", "RIGHT", " is pushed");
     }
     #endif
     buttons |= MASK_RIGHT_BUTTON;
   }
 
   if(ps2x.Button(PSB_PAD_DOWN)) {
-    #if __RUNNING_LOG_ENABLED__
+    #if POKEROBO_PSX_TRACE_ENABLED
     if (isDebugEnabled()) {
-      debugLog("PSB", "_", "PAD", "_", "DOWN", " is pushed");
+      getLogger()->debug("PSB", "_", "PAD", "_", "DOWN", " is pushed");
     }
     #endif
     buttons |= MASK_DOWN_BUTTON;
   }
 
   if(ps2x.Button(PSB_PAD_LEFT)) {
-    #if __RUNNING_LOG_ENABLED__
+    #if POKEROBO_PSX_TRACE_ENABLED
     if (isDebugEnabled()) {
-      debugLog("PSB", "_", "PAD", "_", "LEFT", " is pushed");
+      getLogger()->debug("PSB", "_", "PAD", "_", "LEFT", " is pushed");
     }
     #endif
     buttons |= MASK_LEFT_BUTTON;
@@ -266,31 +291,20 @@ int PS2Listener::check() {
   return ok;
 }
 
-uint32_t PS2EventDispatcher::process(PS2ControlPacket* packet) {
-  uint16_t pressed = processButtonPress(packet->getPressingFlags());
-  if (pressed) {
-    return pressed;
-  }
-  return processJoystickChange(packet->getX(), packet->getY(), 'L');
+//-------------------------------------------------------------------------------------------------
+
+void PS2Processor::setDebugEnabled(bool enabled) {
+  _debugEnabled = enabled;
 }
 
-bool PS2EventDispatcher::isDebugEnabled() {
-  return _debugEnabled;
+void PS2Processor::setDebugLogger(PSxDebugLogger* logger) {
+  _logger = logger;
 }
 
-bool PS2EventDispatcher::isJoystickChanged(int nJoyX, int nJoyY) {
-  #if defined(PS2_JOYSTICK_CHECKING_CHANGE)
-  return nJoyX >= PS2_JOYSTICK_DEADZONE_X || nJoyX <= -PS2_JOYSTICK_DEADZONE_X ||
-      nJoyY >= PS2_JOYSTICK_DEADZONE_Y || nJoyY <= -PS2_JOYSTICK_DEADZONE_Y;
-  #else
-  return true;
-  #endif
+bool PS2Processor::isDebugEnabled() {
+  return (_logger != NULL) && _debugEnabled;
 }
 
-int PS2EventDispatcher::adjustJoystickX(int nJoyX) {
-  return map(nJoyX, 0, 1024, PS2_JOYSTICK_RANGE_X, -PS2_JOYSTICK_RANGE_X);
-}
-
-int PS2EventDispatcher::adjustJoystickY(int nJoyY) {
-  return map(nJoyY, 0, 1024, PS2_JOYSTICK_RANGE_Y, -PS2_JOYSTICK_RANGE_Y);
+PSxDebugLogger* PS2Processor::getLogger() {
+  return _logger;
 }

@@ -21,6 +21,14 @@
 #define GAMEPAD_DATA        12
 #define GAMEPAD_CLOCK       13
 
+#define MASK_UP_BUTTON     1U << 0
+#define MASK_RIGHT_BUTTON  1U << 1
+#define MASK_DOWN_BUTTON   1U << 2
+#define MASK_LEFT_BUTTON   1U << 3
+#define MASK_START_BUTTON  1U << 4
+#define MASK_SELECT_BUTTON 1U << 5
+#define MASK_ANALOG_BUTTON 1U << 6
+
 class PS2Controller_ {
   public:
     PS2Controller_();
@@ -32,9 +40,11 @@ class PS2Controller_ {
     virtual int check();
   protected:
     bool isDebugEnabled();
+    PSxDebugLogger* getLogger();
     PS2X ps2x;
   private:
     bool _debugEnabled;
+    PSxDebugLogger* _logger = NULL;
     int _errorCode;
     bool _errorDisplayed;
 };
@@ -64,6 +74,14 @@ class PS2ControlPacket {
 class PS2Processor {
   public:
     virtual uint32_t process(PS2ControlPacket* packet);
+    void setDebugEnabled(bool enabled);
+    void setDebugLogger(PSxDebugLogger* logger);
+  protected:
+    bool isDebugEnabled();
+    PSxDebugLogger* getLogger();
+  private:
+    bool _debugEnabled;
+    PSxDebugLogger* _logger = NULL;
 };
 
 class PS2Listener: public PS2Controller_ {
